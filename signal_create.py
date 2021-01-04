@@ -56,41 +56,7 @@ def take_features(timeframe):
 model = pickle.load( open( "ml_model.pkl", "rb" ) )
 
 
-
-def post_mistin(type):
-    my_dict = {
-        "close": requests.get("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT").json()["price"],
-        "type": type,
-        "advisor": "5ff0dc842b77149bf7cf974b",
-        "chart": "5ff0dc6c2b77149bf7cf974a",
-        "symbol":"BTCUSDT"
-    }
-
-    response1 = requests.post("https://admin.kriptopik.com/signals/createWithToken?token=!2345678",my_dict)
-    print(response1)
-
-def take_last_signal():
-
-    signals=requests.get("https://admin.kriptopik.com/signals?_sort=timestamp:desc&_limit=1").json()
-
-    if len(signals)>0:
-        a=signals[0]
-        type=a["type"]
-        if type=="LONG":
-            pos=1
-        elif type=="SHORT":
-            pos=-1
-        else:
-            pos=0
-
-    else:
-        pos=0
-    return pos
-
-
-
-
-my_current_pos = take_last_signal()
+my_current_pos = 0
 print("starting")
 print("start pos: ", my_current_pos)
 
@@ -120,8 +86,6 @@ while True:
                 print("enter short")
                 my_current_pos=-1
 
-                post_mistin("SHORT")
-
             elif result[2]>0.8:
                 print("enter long")
                 my_current_pos=1
@@ -131,24 +95,19 @@ while True:
             if result[0]>0.6:
                 print("close long")
                 my_current_pos=0
-                post_mistin("LONG_CLOSE")
 
                 if result[0]>0.8:
                     print("enter short")
                     my_current_pos=-1
-                    post_mistin("SHORT")
 
         elif my_current_pos == -1:
             if result[2] > 0.6:
                 print("close short")
                 my_current_pos = 0
-                post_mistin("SHORT_CLOSE")
 
                 if result[2] > 0.8:
                     print("enter long")
                     my_current_pos = 1
-                    post_mistin("LONG")
-
 
         time.sleep(60)
 
